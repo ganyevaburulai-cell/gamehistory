@@ -6,18 +6,19 @@
     <title>Тарых Каарманы</title>
     <style>
         :root {
-            --bg: #1a1a2e;
-            --card: #16213e;
-            --accent: #e94560;
-            --text: #ffffff;
-            --success: #0fdb71;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gold: #fbbf24;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: var(--bg);
-            color: var(--text);
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,33 +26,67 @@
             overflow: hidden;
         }
 
-        .game-container {
+        .container {
             background: var(--card);
             width: 90%;
             max-width: 450px;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* Баштоо экраны */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        h1 { margin: 0; color: var(--accent); font-size: 2rem; }
+
+        .btn-main {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 16px 48px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            background: #7dd3fc;
+        }
+
+        /* Оюн экраны */
+        #game-ui { display: none; }
+
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 1.1rem;
         }
 
-        .lives { font-size: 1.5rem; color: var(--accent); letter-spacing: 5px; }
-        .score { font-size: 1.2rem; font-weight: bold; color: #f1c40f; }
-
-        .timer-container {
+        .timer-wrap {
             width: 100%;
-            height: 8px;
-            background: #0f3460;
+            height: 6px;
+            background: #334155;
             border-radius: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         #timer-bar {
@@ -59,14 +94,12 @@
             height: 100%;
             background: var(--success);
             border-radius: 10px;
-            transition: width 0.1s linear;
         }
 
         .question {
-            font-size: 1.3rem;
-            margin-bottom: 30px;
-            min-height: 70px;
-            line-height: 1.4;
+            font-size: 1.25rem;
+            min-height: 80px;
+            margin-bottom: 20px;
         }
 
         .options {
@@ -75,184 +108,169 @@
         }
 
         .opt-btn {
-            background: #0f3460;
-            border: 2px solid #533483;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             color: white;
-            padding: 15px;
+            padding: 14px;
             border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
             transition: 0.2s;
         }
 
-        .opt-btn:hover { background: #533483; transform: scale(1.02); }
-        .opt-btn:active { transform: scale(0.98); }
+        .opt-btn:hover { background: rgba(255,255,255,0.15); border-color: var(--accent); }
 
-        .correct { background: var(--success) !important; border-color: #0ba354; }
-        .wrong { background: var(--accent) !important; border-color: #c62842; }
+        .correct { background: var(--success) !important; color: white; }
+        .wrong { background: var(--danger) !important; color: white; }
 
+        /* Аяктоо экраны */
         #end-screen { display: none; }
-        .big-score { font-size: 4rem; margin: 20px 0; color: #f1c40f; }
-        
-        .restart {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        .final-score { font-size: 4rem; color: var(--gold); margin: 20px 0; }
 
+        /* Анимация */
         @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            50% { transform: translateX(8px); }
-            100% { transform: translateX(0); }
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-        .shake { animation: shake 0.3s ease-in-out; }
+        .shake { animation: shake 0.3s; }
     </style>
 </head>
 <body>
 
-    <div class="game-container" id="main-box">
+    <div class="container" id="main-box">
+        <div id="start-screen">
+            <div class="logo-icon">📜</div>
+            <h1>Тарых Каарманы</h1>
+            <p>Кыргыз тарыхы боюнча билимиңди сынап көр!</p>
+            <button class="btn-main" onclick="startGame()">БАШТОО</button>
+        </div>
+
         <div id="game-ui">
             <div class="header">
-                <div class="score" id="score-val">Упай: 0</div>
-                <div class="lives" id="life-val">❤️❤️❤️</div>
+                <span id="score-val">Упай: 0</span>
+                <span id="life-val" style="color: #ef4444;">❤️❤️❤️</span>
             </div>
-            
-            <div class="timer-container">
+            <div class="timer-wrap">
                 <div id="timer-bar"></div>
             </div>
-
             <div class="question" id="q-text">Суроо жүктөлүүдө...</div>
-            
             <div class="options" id="opt-box"></div>
         </div>
 
         <div id="end-screen">
-            <h2 id="status">Оюн бүттү!</h2>
-            <div class="big-score" id="final-score">0</div>
-            <p id="msg">Дагы аракет кылып көрүңүз!</p>
-            <button class="restart" onclick="location.reload()">Кайра баштоо</button>
+            <h2>Оюн аяктады!</h2>
+            <div class="final-score" id="res-score">0</div>
+            <p id="res-msg"></p>
+            <button class="btn-main" onclick="location.reload()">КАЙРАДАН</button>
         </div>
     </div>
 
 <script>
     const database = [
-        { q: "Кыргыз каганатынын негиздөөчүсү ким болгон?", a: ["Барсбек каган", "Мукан каган", "Бумын каган"], c: 0 },
-        { q: "Алай канышасы деп кимди аташкан?", a: ["Каншайым", "Курманжан Датка", "Жаңыл Мырза"], c: 1 },
-        { q: "Тарыхта 'Куттуу билим' чыгармасын ким жазган?", a: ["М. Кашгари", "С. Каралаев", "Ж. Баласагын"], c: 2 },
-        { q: "Орто Азиядагы эң байыркы шаарлардын бири?", a: ["Талас", "Ош", "Нарын"], c: 1 },
-        { q: "Кыргыздардын ата-бабалары кайсы жерден көчүп келген?", a: ["Енисейден", "Алтайдан", "Кавказдан"], c: 0 },
-        { q: "Махмуд Кашгаринин атактуу эмгеги кандай аталат?", a: ["Манас", "Диван лугат ат-түрк", "Тарых-и Рашиди"], c: 1 },
-        { q: "1916-жылдагы улуттук боштондук көтөрүлүш эмне деп аталат?", a: ["Үркүн", "Төңкөрүш", "Согуш"], c: 0 },
-        { q: "Кыргыз сому качан жүгүртүүгө киргизилген?", a: ["1991-ж", "1993-ж", "1995-ж"], c: 1 },
-        { q: "Саймалуу-Таш эстеликтери кайсы доорго таандык?", a: ["Орто кылымга", "Байыркы доорго", "XIX кылымга"], c: 1 },
-        { q: "Улуу Жибек Жолунда жайгашкан байыркы мунара?", a: ["Бурана", "Айша-Биби", "Минарет"], c: 0 },
-        { q: "Кыргыз каганаты кайсы кылымда гүлдөп өскөн?", a: ["VI к.", "IX к.", "XII к."], c: 1 },
-        { q: "Кыргыз автоном облусу качан түзүлгөн?", a: ["1924-ж", "1936-ж", "1991-ж"], c: 0 },
-        { q: "Түрк каганатынын борбору кайсы шаар болгон?", a: ["Баласагын", "Суяб", "Өзгөн"], c: 1 },
-        { q: "Кыргыз элчиси биринчи жолу Россияга качан барган?", a: ["1785-ж", "1812-ж", "1855-ж"], c: 0 },
-        { q: "Кыргыздар жөнүндө эң биринчи маалымат жазган тарыхчы?", a: ["Геродот", "Сыма Цянь", "Птолемей"], c: 1 }
+        { q: "Кыргыз каганатынын негиздөөчүсү ким?", a: ["Барсбек", "Мукан", "Бумын"], c: 0 },
+        { q: "Алай канышасы деп кимди аташкан?", a: ["Жаңыл Мырза", "Курманжан Датка", "Каншайым"], c: 1 },
+        { q: "Жусуп Баласагындын белгилүү чыгармасы?", a: ["Куттуу билим", "Манас", "Диван Лугат"], c: 0 },
+        { q: "Эң байыркы кыргыз шаары?", a: ["Бишкек", "Жалал-Абад", "Ош"], c: 2 },
+        { q: "Кыргыз каганаты кайсы кылымда гүлдөгөн?", a: ["VI к.", "IX к.", "XV к."], c: 1 },
+        { q: "Саймалуу-Таш кайсы жерде жайгашкан?", a: ["Нарын", "Ысык-Көл", "Жалал-Абад"], c: 2 },
+        { q: "Кыргыз сому качан киргизилген?", a: ["1991", "1993", "1995"], c: 1 },
+        { q: "Бурана мунарасы кайсы шаарга жакын?", a: ["Токмок", "Талас", "Ош"], c: 0 },
+        { q: "Кыргыздар жөнүндө эң алгачкы маалымат кайсы элдин булагында?", a: ["Араб", "Кытай", "Перс"], c: 1 },
+        { q: "1916-жылдагы окуя кандай аталат?", a: ["Революция", "Көтөрүлүш (Үркүн)", "Согуш"], c: 1 }
     ];
 
     let current = 0;
     let score = 0;
     let lives = 3;
     let timer;
-    let timeLimit = 100;
+    let timeScale = 100;
 
     function startGame() {
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("game-ui").style.display = "block";
+        loadQuestion();
+    }
+
+    function loadQuestion() {
         if (current >= database.length || lives <= 0) {
-            finish();
+            showResult();
             return;
         }
 
-        // UI жаңылоо
-        document.getElementById("q-text").innerText = database[current].q;
-        const opts = document.getElementById("opt-box");
-        opts.innerHTML = "";
+        const q = database[current];
+        document.getElementById("q-text").innerText = q.q;
+        const box = document.getElementById("opt-box");
+        box.innerHTML = "";
 
-        database[current].a.forEach((text, i) => {
+        q.a.forEach((txt, i) => {
             const btn = document.createElement("button");
             btn.className = "opt-btn";
-            btn.innerText = text;
+            btn.innerText = txt;
             btn.onclick = () => check(i, btn);
-            opts.appendChild(btn);
+            box.appendChild(btn);
         });
 
-        startTimer();
+        runTimer();
     }
 
-    function startTimer() {
+    function runTimer() {
         clearInterval(timer);
-        timeLimit = 100;
+        timeScale = 100;
         const bar = document.getElementById("timer-bar");
-        
         timer = setInterval(() => {
-            timeLimit -= 1.5; // Убакыттын ылдамдыгы
-            bar.style.width = timeLimit + "%";
-            
-            if (timeLimit <= 0) {
+            timeScale -= 1;
+            bar.style.width = timeScale + "%";
+            if (timeScale <= 0) {
                 clearInterval(timer);
-                wrongAction();
+                wrong();
             }
-        }, 150);
+        }, 100); // 10 секунд
     }
 
     function check(idx, btn) {
         clearInterval(timer);
-        const correctIdx = database[current].c;
+        const correct = database[current].c;
         const btns = document.querySelectorAll(".opt-btn");
         btns.forEach(b => b.style.pointerEvents = "none");
 
-        if (idx === correctIdx) {
+        if (idx === correct) {
             btn.classList.add("correct");
-            score += Math.round(timeLimit / 2); // Убакытка жараша упай
+            score += Math.round(timeScale / 2) + 10;
             document.getElementById("score-val").innerText = "Упай: " + score;
         } else {
             btn.classList.add("wrong");
-            btns[correctIdx].classList.add("correct");
-            wrongAction();
+            btns[correct].classList.add("correct");
+            wrong();
         }
 
         setTimeout(() => {
             current++;
-            startGame();
-        }, 1000);
+            loadQuestion();
+        }, 1200);
     }
 
-    function wrongAction() {
+    function wrong() {
         lives--;
-        const box = document.getElementById("main-box");
-        box.classList.add("shake");
-        setTimeout(() => box.classList.remove("shake"), 300);
-        
+        document.getElementById("main-box").classList.add("shake");
+        setTimeout(() => document.getElementById("main-box").classList.remove("shake"), 300);
         document.getElementById("life-val").innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
         
         if (lives <= 0) {
-            setTimeout(finish, 500);
-        } else if (timeLimit <= 0) {
+            setTimeout(showResult, 800);
+        } else if (timeScale <= 0) {
             current++;
-            startGame();
+            loadQuestion();
         }
     }
 
-    function finish() {
+    function showResult() {
         document.getElementById("game-ui").style.display = "none";
-        document.getElementById("end-screen").style.display = "block";
-        document.getElementById("final-score").innerText = score;
-        
-        if (score > 200) {
-            document.getElementById("status").innerText = "Сиз Тарых Каарманысыз!";
-            document.getElementById("msg").innerText = "Билимиңиз абдан жогору! 🏆";
-        }
+        const end = document.getElementById("end-screen");
+        end.style.display = "block";
+        document.getElementById("res-score").innerText = score;
+        document.getElementById("res-msg").innerText = score > 300 ? "Сиз чыныгы тарыхчысыз! 🏆" : "Жакшы, дагы аракет кылыңыз! 📚";
     }
-
-    startGame();
 </script>
 </body>
 </html>
