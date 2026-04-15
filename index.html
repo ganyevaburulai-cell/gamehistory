@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тарых Каарманы</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #e94560;
+            --text: #ffffff;
+            --success: #0fdb71;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: var(--card);
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .lives { font-size: 1.5rem; color: var(--accent); letter-spacing: 5px; }
+        .score { font-size: 1.2rem; font-weight: bold; color: #f1c40f; }
+
+        .timer-container {
+            width: 100%;
+            height: 8px;
+            background: #0f3460;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--success);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            min-height: 70px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .opt-btn {
+            background: #0f3460;
+            border: 2px solid #533483;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .opt-btn:hover { background: #533483; transform: scale(1.02); }
+        .opt-btn:active { transform: scale(0.98); }
+
+        .correct { background: var(--success) !important; border-color: #0ba354; }
+        .wrong { background: var(--accent) !important; border-color: #c62842; }
+
+        #end-screen { display: none; }
+        .big-score { font-size: 4rem; margin: 20px 0; color: #f1c40f; }
+        
+        .restart {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="main-box">
+        <div id="game-ui">
+            <div class="header">
+                <div class="score" id="score-val">Упай: 0</div>
+                <div class="lives" id="life-val">❤️❤️❤️</div>
+            </div>
+            
+            <div class="timer-container">
+                <div id="timer-bar"></div>
+            </div>
+
+            <div class="question" id="q-text">Суроо жүктөлүүдө...</div>
+            
+            <div class="options" id="opt-box"></div>
+        </div>
+
+        <div id="end-screen">
+            <h2 id="status">Оюн бүттү!</h2>
+            <div class="big-score" id="final-score">0</div>
+            <p id="msg">Дагы аракет кылып көрүңүз!</p>
+            <button class="restart" onclick="location.reload()">Кайра баштоо</button>
+        </div>
+    </div>
+
+<script>
+    const database = [
+        { q: "Кыргыз каганатынын негиздөөчүсү ким болгон?", a: ["Барсбек каган", "Мукан каган", "Бумын каган"], c: 0 },
+        { q: "Алай канышасы деп кимди аташкан?", a: ["Каншайым", "Курманжан Датка", "Жаңыл Мырза"], c: 1 },
+        { q: "Тарыхта 'Куттуу билим' чыгармасын ким жазган?", a: ["М. Кашгари", "С. Каралаев", "Ж. Баласагын"], c: 2 },
+        { q: "Орто Азиядагы эң байыркы шаарлардын бири?", a: ["Талас", "Ош", "Нарын"], c: 1 },
+        { q: "Кыргыздардын ата-бабалары кайсы жерден көчүп келген?", a: ["Енисейден", "Алтайдан", "Кавказдан"], c: 0 },
+        { q: "Махмуд Кашгаринин атактуу эмгеги кандай аталат?", a: ["Манас", "Диван лугат ат-түрк", "Тарых-и Рашиди"], c: 1 },
+        { q: "1916-жылдагы улуттук боштондук көтөрүлүш эмне деп аталат?", a: ["Үркүн", "Төңкөрүш", "Согуш"], c: 0 },
+        { q: "Кыргыз сому качан жүгүртүүгө киргизилген?", a: ["1991-ж", "1993-ж", "1995-ж"], c: 1 },
+        { q: "Саймалуу-Таш эстеликтери кайсы доорго таандык?", a: ["Орто кылымга", "Байыркы доорго", "XIX кылымга"], c: 1 },
+        { q: "Улуу Жибек Жолунда жайгашкан байыркы мунара?", a: ["Бурана", "Айша-Биби", "Минарет"], c: 0 },
+        { q: "Кыргыз каганаты кайсы кылымда гүлдөп өскөн?", a: ["VI к.", "IX к.", "XII к."], c: 1 },
+        { q: "Кыргыз автоном облусу качан түзүлгөн?", a: ["1924-ж", "1936-ж", "1991-ж"], c: 0 },
+        { q: "Түрк каганатынын борбору кайсы шаар болгон?", a: ["Баласагын", "Суяб", "Өзгөн"], c: 1 },
+        { q: "Кыргыз элчиси биринчи жолу Россияга качан барган?", a: ["1785-ж", "1812-ж", "1855-ж"], c: 0 },
+        { q: "Кыргыздар жөнүндө эң биринчи маалымат жазган тарыхчы?", a: ["Геродот", "Сыма Цянь", "Птолемей"], c: 1 }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let lives = 3;
+    let timer;
+    let timeLimit = 100;
+
+    function startGame() {
+        if (current >= database.length || lives <= 0) {
+            finish();
+            return;
+        }
+
+        // UI жаңылоо
+        document.getElementById("q-text").innerText = database[current].q;
+        const opts = document.getElementById("opt-box");
+        opts.innerHTML = "";
+
+        database[current].a.forEach((text, i) => {
+            const btn = document.createElement("button");
+            btn.className = "opt-btn";
+            btn.innerText = text;
+            btn.onclick = () => check(i, btn);
+            opts.appendChild(btn);
+        });
+
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timer);
+        timeLimit = 100;
+        const bar = document.getElementById("timer-bar");
+        
+        timer = setInterval(() => {
+            timeLimit -= 1.5; // Убакыттын ылдамдыгы
+            bar.style.width = timeLimit + "%";
+            
+            if (timeLimit <= 0) {
+                clearInterval(timer);
+                wrongAction();
+            }
+        }, 150);
+    }
+
+    function check(idx, btn) {
+        clearInterval(timer);
+        const correctIdx = database[current].c;
+        const btns = document.querySelectorAll(".opt-btn");
+        btns.forEach(b => b.style.pointerEvents = "none");
+
+        if (idx === correctIdx) {
+            btn.classList.add("correct");
+            score += Math.round(timeLimit / 2); // Убакытка жараша упай
+            document.getElementById("score-val").innerText = "Упай: " + score;
+        } else {
+            btn.classList.add("wrong");
+            btns[correctIdx].classList.add("correct");
+            wrongAction();
+        }
+
+        setTimeout(() => {
+            current++;
+            startGame();
+        }, 1000);
+    }
+
+    function wrongAction() {
+        lives--;
+        const box = document.getElementById("main-box");
+        box.classList.add("shake");
+        setTimeout(() => box.classList.remove("shake"), 300);
+        
+        document.getElementById("life-val").innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+        
+        if (lives <= 0) {
+            setTimeout(finish, 500);
+        } else if (timeLimit <= 0) {
+            current++;
+            startGame();
+        }
+    }
+
+    function finish() {
+        document.getElementById("game-ui").style.display = "none";
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("final-score").innerText = score;
+        
+        if (score > 200) {
+            document.getElementById("status").innerText = "Сиз Тарых Каарманысыз!";
+            document.getElementById("msg").innerText = "Билимиңиз абдан жогору! 🏆";
+        }
+    }
+
+    startGame();
+</script>
+</body>
+</html>
